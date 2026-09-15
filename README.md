@@ -1,6 +1,13 @@
-# v2rayNG
+# KIRA-VPN
 
-A V2Ray client for Android, support [Xray core](https://github.com/XTLS/Xray-core) and [v2fly core](https://github.com/v2fly/v2ray-core)
+KIRA-VPN is an Android client based on the upstream v2rayNG project. It keeps
+the upstream Xray/V2Ray tunnel, profile management, QR import, routing,
+subscription, and VPN service capabilities while using the KIRA-VPN identity.
+
+This repository is a GPL-3.0 fork of [2dust/v2rayNG](https://github.com/2dust/v2rayNG).
+See `LICENSE` and the upstream notices before redistributing builds.
+
+A V2Ray client for Android, supporting [Xray core](https://github.com/XTLS/Xray-core) and [v2fly core](https://github.com/v2fly/v2ray-core).
 
 [![API](https://img.shields.io/badge/API-24%2B-yellow.svg?style=flat)](https://developer.android.com/about/versions/lollipop)
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg)](https://kotlinlang.org)
@@ -17,7 +24,7 @@ Download the latest release here:
 
 在这里下载最新版本：
 
-[https://github.com/2dust/v2rayNG/releases](https://github.com/2dust/v2rayNG/releases)
+[https://github.com/jub4bsd/KIRA-VPN/releases](https://github.com/jub4bsd/KIRA-VPN/releases)
 
 > [!TIP]
 > v2rayNG is the mobile version. For the desktop version, please visit the v2rayN \
