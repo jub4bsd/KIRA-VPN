@@ -81,6 +81,20 @@ class KiraConfigCipherTest {
         )
     }
 
+    @Test
+    fun profileNameFromFileNameUsesTheFileNameWithoutExtension() {
+        assertEquals("My profile", KiraConfigCipher.profileNameFromFileName("My profile.kira"))
+        assertEquals("My profile", KiraConfigCipher.profileNameFromFileName("My profile.KIRA"))
+    }
+
+    @Test
+    fun profileNameFromFileNameFallsBackAndLimitsTheName() {
+        assertEquals("KIRA VPN", KiraConfigCipher.profileNameFromFileName(".kira"))
+        assertEquals("KIRA VPN", KiraConfigCipher.profileNameFromFileName(null))
+        assertEquals("x".repeat(KiraConfigCipher.MAX_PROFILE_NAME_CHARS),
+            KiraConfigCipher.profileNameFromFileName("x".repeat(80) + ".kira"))
+    }
+
     private fun String.hexToBytes(): ByteArray =
         chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }

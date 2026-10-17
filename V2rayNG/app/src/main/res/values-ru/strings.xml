@@ -473,7 +473,6 @@
     <string name="kira_secure_import_message">Введите парольную фразу, которую отправитель передал отдельно.</string>
     <string name="kira_secure_passphrase_label">Парольная фраза</string>
     <string name="kira_secure_export_filename_label">Имя файла</string>
-    <string name="kira_secure_import_profile_name_label">Имя конфигурации</string>
     <string name="kira_secure_export_action">Поделиться зашифрованным файлом</string>
     <string name="kira_secure_import_action">Разблокировать и импортировать</string>
     <string name="kira_secure_export_chooser">Поделиться зашифрованным файлом KIRA</string>

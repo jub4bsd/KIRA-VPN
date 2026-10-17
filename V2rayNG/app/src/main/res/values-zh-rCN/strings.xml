@@ -467,7 +467,6 @@
     <string name="kira_secure_import_message">请输入文件分享者通过单独渠道发送的口令。</string>
     <string name="kira_secure_passphrase_label">口令</string>
     <string name="kira_secure_export_filename_label">文件名</string>
-    <string name="kira_secure_import_profile_name_label">配置名称</string>
     <string name="kira_secure_export_action">分享加密文件</string>
     <string name="kira_secure_import_action">解锁并导入</string>
     <string name="kira_secure_export_chooser">分享加密的 KIRA 文件</string>

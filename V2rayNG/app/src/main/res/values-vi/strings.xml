@@ -467,7 +467,6 @@
     <string name="kira_secure_import_message">Nhập cụm mật khẩu mà người gửi đã gửi riêng cho bạn.</string>
     <string name="kira_secure_passphrase_label">Cụm mật khẩu</string>
     <string name="kira_secure_export_filename_label">Tên tệp</string>
-    <string name="kira_secure_import_profile_name_label">Tên cấu hình</string>
     <string name="kira_secure_export_action">Chia sẻ tệp đã mã hóa</string>
     <string name="kira_secure_import_action">Mở khóa và nhập</string>
     <string name="kira_secure_export_chooser">Chia sẻ tệp KIRA đã mã hóa</string>

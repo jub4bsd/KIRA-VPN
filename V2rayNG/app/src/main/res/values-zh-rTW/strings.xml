@@ -467,7 +467,6 @@
     <string name="kira_secure_import_message">請輸入分享檔案的人另外傳送給您的密語。</string>
     <string name="kira_secure_passphrase_label">密語</string>
     <string name="kira_secure_export_filename_label">檔案名稱</string>
-    <string name="kira_secure_import_profile_name_label">設定名稱</string>
     <string name="kira_secure_export_action">分享加密檔案</string>
     <string name="kira_secure_import_action">解除鎖定並匯入</string>
     <string name="kira_secure_export_chooser">分享加密的 KIRA 檔案</string>

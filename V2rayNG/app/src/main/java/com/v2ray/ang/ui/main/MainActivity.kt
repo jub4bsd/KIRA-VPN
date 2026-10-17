@@ -288,7 +288,12 @@ class MainActivity : HelperBaseComponentActivity() {
         if (uri.lastPathSegment?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true) {
             return true
         }
-        return runCatching {
+        return openableDisplayName(uri)
+            ?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true
+    }
+
+    private fun openableDisplayName(uri: Uri): String? =
+        runCatching {
             contentResolver.query(
                 uri,
                 arrayOf(OpenableColumns.DISPLAY_NAME),
@@ -297,12 +302,9 @@ class MainActivity : HelperBaseComponentActivity() {
                 null,
             )?.use { cursor ->
                 val nameColumn = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                nameColumn >= 0 && cursor.moveToFirst() &&
-                    cursor.getString(nameColumn)
-                        ?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true
-            } ?: false
-        }.getOrDefault(false)
-    }
+                if (nameColumn >= 0 && cursor.moveToFirst()) cursor.getString(nameColumn) else null
+            }
+        }.getOrNull()
 
     private fun handleIncomingKiraIntent(intent: Intent?) {
         if (intent?.action != Intent.ACTION_VIEW) return
@@ -329,11 +331,14 @@ class MainActivity : HelperBaseComponentActivity() {
         secureImportPendingState.value = false
     }
 
-    private fun unlockKiraFile(passphrase: String, profileName: String) {
+    private fun unlockKiraFile(passphrase: String) {
         val uri = secureImportUri ?: return
         dismissKiraImport()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val profileName = KiraConfigCipher.profileNameFromFileName(
+                    openableDisplayName(uri) ?: uri.lastPathSegment
+                )
                 val encryptedBytes = readKiraFile(uri)
                 val configText = String(
                     KiraConfigCipher.decrypt(encryptedBytes, passphrase),

@@ -51,6 +51,24 @@ object KiraConfigCipher {
         }
     }
 
+    fun profileNameFromFileName(fileName: String?): String {
+        val name = fileName.orEmpty()
+            .substringAfterLast('/')
+            .substringAfterLast('\\')
+            .trim()
+        val baseName = if (name.endsWith(FILE_EXTENSION, ignoreCase = true)) {
+            name.dropLast(FILE_EXTENSION.length)
+        } else {
+            name
+        }
+        val safeName = baseName
+            .filter { !it.isISOControl() && it !in "/\\:*?\"<>|" }
+            .trim()
+            .take(MAX_PROFILE_NAME_CHARS)
+            .trim()
+        return normalizeProfileName(safeName) ?: "KIRA VPN"
+    }
+
     private val magic = "KIRACFG\u0001".toByteArray(StandardCharsets.US_ASCII)
     private const val SALT_BYTES = 16
     private const val IV_BYTES = 12
