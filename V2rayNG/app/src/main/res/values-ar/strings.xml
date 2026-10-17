@@ -476,6 +476,7 @@
     <string name="kira_secure_import_title">فتح ملف KIRA المشفّر</string>
     <string name="kira_secure_import_message">أدخل عبارة المرور التي أرسلها ناشر الملف بشكل منفصل.</string>
     <string name="kira_secure_passphrase_label">عبارة المرور</string>
+    <string name="kira_secure_export_filename_label">اسم الملف</string>
     <string name="kira_secure_export_action">مشاركة الملف المشفّر</string>
     <string name="kira_secure_import_action">فك القفل والاستيراد</string>
     <string name="kira_secure_export_chooser">مشاركة ملف KIRA المشفّر</string>

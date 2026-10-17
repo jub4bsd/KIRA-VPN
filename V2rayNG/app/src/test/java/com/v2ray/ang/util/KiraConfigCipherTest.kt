@@ -3,6 +3,7 @@ package com.v2ray.ang.util
 import javax.crypto.AEADBadTagException
 import javax.crypto.Mac
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -54,6 +55,67 @@ class KiraConfigCipherTest {
     @Test(expected = IllegalArgumentException::class)
     fun invalidHeaderIsRejected() {
         KiraConfigCipher.decrypt(ByteArray(64), passphrase)
+    }
+
+    @Test
+    fun exportFileNameUsesTheChosenNameAndAddsOnlyOneExtension() {
+        assertEquals("My profile.kira", KiraConfigCipher.exportFileName("My profile.kira"))
+        assertEquals("My profile.kira", KiraConfigCipher.exportFileName("My profile"))
+    }
+
+    @Test
+    fun exportFileNameRemovesPathCharactersAndUsesFallbackWhenEmpty() {
+        assertEquals("profile.kira", KiraConfigCipher.exportFileName("../profile"))
+        assertEquals("KIRA VPN.kira", KiraConfigCipher.exportFileName("../"))
+    }
+
+    @Test
+    fun profileNameIsTrimmedAndRejectsBlankOrTooLongValues() {
+        assertEquals("New node", KiraConfigCipher.normalizeProfileName("  New node  "))
+        assertEquals(null, KiraConfigCipher.normalizeProfileName("   "))
+        assertEquals(
+            null,
+            KiraConfigCipher.normalizeProfileName(
+                "x".repeat(KiraConfigCipher.MAX_PROFILE_NAME_CHARS + 1)
+            ),
+        )
+    }
+
+    @Test
+    fun profileNameFromFileNameUsesTheFileNameWithoutExtension() {
+        assertEquals("My profile", KiraConfigCipher.profileNameFromFileName("My profile.kira"))
+        assertEquals("My profile", KiraConfigCipher.profileNameFromFileName("My profile.KIRA"))
+    }
+
+    @Test
+    fun profileNameFromFileNameFallsBackAndLimitsTheName() {
+        assertEquals("KIRA VPN", KiraConfigCipher.profileNameFromFileName(".kira"))
+        assertEquals("KIRA VPN", KiraConfigCipher.profileNameFromFileName(null))
+        assertEquals("x".repeat(KiraConfigCipher.MAX_PROFILE_NAME_CHARS),
+            KiraConfigCipher.profileNameFromFileName("x".repeat(80) + ".kira"))
+    }
+
+    @Test
+    fun encryptedExportRetainsTheChosenUnicodeName() {
+        listOf("YOUTUBE 🇺🇲", "YOUTUBE 🇧🇪").forEach { fileName ->
+            val profileName = KiraConfigCipher.exportProfileName(fileName)
+            val payload = KiraConfigCipher.encodeExportPayload(profileName, "vless://example-profile")
+            val encrypted = KiraConfigCipher.encrypt(payload, passphrase)
+            val imported = KiraConfigCipher.decodeExportPayload(
+                KiraConfigCipher.decrypt(encrypted, passphrase)
+            )
+            assertEquals(fileName, imported.profileName)
+            assertEquals("vless://example-profile", imported.configText)
+        }
+    }
+
+    @Test
+    fun decodeExportPayloadKeepsLegacyPlainConfigurationsImportable() {
+        val legacyConfig = "vless://legacy-profile"
+        assertEquals(
+            KiraConfigCipher.ExportPayload(null, legacyConfig),
+            KiraConfigCipher.decodeExportPayload(legacyConfig.toByteArray()),
+        )
     }
 
     private fun String.hexToBytes(): ByteArray =

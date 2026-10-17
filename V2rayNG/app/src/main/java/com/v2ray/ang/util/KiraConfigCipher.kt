@@ -18,8 +18,85 @@ object KiraConfigCipher {
     const val FILE_EXTENSION = ".kira"
     const val MIN_PASSPHRASE_LENGTH = 12
     const val MAX_PASSPHRASE_CHARS = 1024
-    const val MAX_PLAINTEXT_BYTES = 256 * 1024
+    const val MAX_EXPORT_FILE_NAME_CHARS = 100
+    const val MAX_PROFILE_NAME_CHARS = MAX_EXPORT_FILE_NAME_CHARS
+    private const val MAX_EXPORT_PAYLOAD_METADATA_BYTES = 512
+    const val MAX_PLAINTEXT_BYTES = 256 * 1024 + MAX_EXPORT_PAYLOAD_METADATA_BYTES
     const val MAX_FILE_BYTES = MAX_PLAINTEXT_BYTES + 64
+
+    fun exportFileName(name: String): String {
+        val trimmedName = name.trim()
+        val withoutExtension = if (
+            trimmedName.endsWith(FILE_EXTENSION, ignoreCase = true)
+        ) {
+            trimmedName.dropLast(FILE_EXTENSION.length)
+        } else {
+            trimmedName
+        }
+        val safeBaseName = withoutExtension
+            .filter { !it.isISOControl() && it !in "/\\:*?\"<>|" }
+            .trim()
+            .trimStart('.')
+            .take(MAX_EXPORT_FILE_NAME_CHARS)
+            .trimEnd('.', ' ')
+            .ifBlank { "KIRA VPN" }
+        return safeBaseName + FILE_EXTENSION
+    }
+
+    fun exportProfileName(name: String): String =
+        exportFileName(name).removeSuffix(FILE_EXTENSION)
+
+    fun normalizeProfileName(name: String): String? {
+        val normalizedName = name.trim()
+        return normalizedName.takeIf {
+            it.isNotEmpty() &&
+                it.length <= MAX_PROFILE_NAME_CHARS &&
+                it.none { character -> character.isISOControl() }
+        }
+    }
+
+    private const val EXPORT_PAYLOAD_HEADER = "KIRA-NAMED-EXPORT-V1\n"
+
+    data class ExportPayload(val profileName: String?, val configText: String)
+
+    fun encodeExportPayload(profileName: String, configText: String): ByteArray {
+        val normalizedName = normalizeProfileName(profileName)
+            ?: throw IllegalArgumentException("Invalid KIRA profile name")
+        require(configText.isNotBlank()) { "KIRA configuration cannot be empty" }
+        return "$EXPORT_PAYLOAD_HEADER$normalizedName\n$configText".toByteArray(StandardCharsets.UTF_8)
+    }
+
+    fun decodeExportPayload(plaintext: ByteArray): ExportPayload {
+        val text = String(plaintext, StandardCharsets.UTF_8)
+        if (!text.startsWith(EXPORT_PAYLOAD_HEADER)) return ExportPayload(null, text)
+
+        val nameStart = EXPORT_PAYLOAD_HEADER.length
+        val nameEnd = text.indexOf('\n', nameStart)
+        require(nameEnd > nameStart) { "Invalid KIRA profile metadata" }
+        val profileName = normalizeProfileName(text.substring(nameStart, nameEnd))
+            ?: throw IllegalArgumentException("Invalid KIRA profile name")
+        val configText = text.substring(nameEnd + 1)
+        require(configText.isNotBlank()) { "KIRA configuration cannot be empty" }
+        return ExportPayload(profileName, configText)
+    }
+
+    fun profileNameFromFileName(fileName: String?): String {
+        val name = fileName.orEmpty()
+            .substringAfterLast('/')
+            .substringAfterLast('\\')
+            .trim()
+        val baseName = if (name.endsWith(FILE_EXTENSION, ignoreCase = true)) {
+            name.dropLast(FILE_EXTENSION.length)
+        } else {
+            name
+        }
+        val safeName = baseName
+            .filter { !it.isISOControl() && it !in "/\\:*?\"<>|" }
+            .trim()
+            .take(MAX_PROFILE_NAME_CHARS)
+            .trim()
+        return normalizeProfileName(safeName) ?: "KIRA VPN"
+    }
 
     private val magic = "KIRACFG\u0001".toByteArray(StandardCharsets.US_ASCII)
     private const val SALT_BYTES = 16

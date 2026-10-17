@@ -23,6 +23,7 @@ import com.v2ray.ang.fmt.VmessFmt
 import com.v2ray.ang.fmt.WireguardFmt
 import com.v2ray.ang.util.HttpUtil
 import com.v2ray.ang.util.JsonUtil
+import com.v2ray.ang.util.KiraConfigCipher
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.QRCodeDecoder
 import com.v2ray.ang.util.Utils
@@ -155,12 +156,13 @@ object AngConfigManager {
      * Imports exactly one supported protocol URI. It deliberately does not accept subscription
      * URLs, batches, or raw JSON, so opening a KIRA file cannot trigger a remote fetch.
      */
-    fun importKiraConfig(configText: String, subid: String): String? {
+    fun importKiraConfig(configText: String, subid: String, profileName: String): String? {
         val text = configText.trim()
         if (text.isEmpty() || text.contains('\n') || text.contains('\r')) return null
+        val normalizedProfileName = KiraConfigCipher.normalizeProfileName(profileName) ?: return null
 
         val profile = parseConfig(text, subid, null) ?: return null
-        profile.remarks = "KIRA VPN"
+        profile.remarks = normalizedProfileName
         profile.description = null
         profile.kiraProtected = true
 

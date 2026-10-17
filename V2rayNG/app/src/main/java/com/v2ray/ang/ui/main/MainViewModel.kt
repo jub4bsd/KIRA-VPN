@@ -286,7 +286,7 @@ class MainViewModel(
             is MainAction.RemoveServer -> removeServerAndRefresh(action.guid)
             is MainAction.Search -> filterConfig(action.query)
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
-            is MainAction.ImportKiraConfig -> importKiraConfig(action.configText)
+            is MainAction.ImportKiraConfig -> importKiraConfig(action.configText, action.profileName)
             MainAction.LocateHandled -> consumeLocateTarget()
             is MainAction.ShareQRCode -> {
                 val bitmap = dataSource.share2QRCode(action.guid)
@@ -531,13 +531,14 @@ class MainViewModel(
         }
     }
 
-    private fun importKiraConfig(configText: String) {
+    private fun importKiraConfig(configText: String, profileName: String) {
         launchLoading {
             withContext(ioDispatcher) {
                 try {
                     val guid = dataSource.importKiraConfig(
                         configText,
                         uiState.value.selectedGroupId,
+                        profileName,
                     )
                     if (guid == null) {
                         toastError(R.string.kira_secure_import_failed)

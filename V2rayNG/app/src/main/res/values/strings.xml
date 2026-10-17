@@ -468,6 +468,7 @@
     <string name="kira_secure_import_title">Unlock KIRA file</string>
     <string name="kira_secure_import_message">Enter the passphrase sent separately by the person who shared this file.</string>
     <string name="kira_secure_passphrase_label">Passphrase</string>
+    <string name="kira_secure_export_filename_label">File name</string>
     <string name="kira_secure_export_action">Share encrypted file</string>
     <string name="kira_secure_import_action">Unlock and import</string>
     <string name="kira_secure_export_chooser">Share encrypted KIRA file</string>

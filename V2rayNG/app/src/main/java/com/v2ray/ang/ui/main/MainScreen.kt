@@ -81,6 +81,7 @@ fun MainScreen(
     var showRemoveConfirm by remember { mutableStateOf<String?>(null) }
     var secureExportGuid by rememberSaveable { mutableStateOf<String?>(null) }
     var secureExportPassphrase by rememberSaveable(secureExportGuid) { mutableStateOf("") }
+    var secureExportFileName by rememberSaveable(secureExportGuid) { mutableStateOf("KIRA VPN") }
     var secureImportPassphrase by rememberSaveable { mutableStateOf("") }
 
     var shareTarget by remember { mutableStateOf<Triple<String, ProfileItem, Boolean>?>(null) }
@@ -149,6 +150,7 @@ fun MainScreen(
             onAction = { action ->
                 if (action is MainAction.RequestKiraExport) {
                     secureExportGuid = action.guid
+                    secureExportFileName = "KIRA VPN"
                     secureExportPassphrase = ""
                 } else {
                     onAction(action)
@@ -163,12 +165,22 @@ fun MainScreen(
             message = stringResource(R.string.kira_secure_export_message),
             actionLabel = stringResource(R.string.kira_secure_export_action),
             passphrase = secureExportPassphrase,
+            name = secureExportFileName,
+            nameLabel = stringResource(R.string.kira_secure_export_filename_label),
+            maximumNameLength = com.v2ray.ang.util.KiraConfigCipher.MAX_EXPORT_FILE_NAME_CHARS,
             minimumLength = com.v2ray.ang.util.KiraConfigCipher.MIN_PASSPHRASE_LENGTH,
+            onNameChange = { secureExportFileName = it },
             onPassphraseChange = { secureExportPassphrase = it },
             onConfirm = {
                 val guid = secureExportGuid
                 if (guid != null) {
-                    onAction(MainAction.ExportKiraConfig(guid, secureExportPassphrase))
+                    onAction(
+                        MainAction.ExportKiraConfig(
+                            guid,
+                            secureExportPassphrase,
+                            secureExportFileName,
+                        )
+                    )
                 }
                 secureExportGuid = null
                 secureExportPassphrase = ""
@@ -176,6 +188,7 @@ fun MainScreen(
             onDismiss = {
                 secureExportGuid = null
                 secureExportPassphrase = ""
+                secureExportFileName = "KIRA VPN"
             },
         )
     }
@@ -329,7 +342,11 @@ private fun KiraPassphraseDialog(
     message: String,
     actionLabel: String,
     passphrase: String,
+    name: String? = null,
+    nameLabel: String? = null,
+    maximumNameLength: Int = 0,
     minimumLength: Int,
+    onNameChange: (String) -> Unit = {},
     onPassphraseChange: (String) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
@@ -347,6 +364,15 @@ private fun KiraPassphraseDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(message)
+                if (name != null && nameLabel != null) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { onNameChange(it.take(maximumNameLength)) },
+                        label = { Text(nameLabel) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
                 OutlinedTextField(
                     value = passphrase,
                     onValueChange = onPassphraseChange,
@@ -361,7 +387,7 @@ private fun KiraPassphraseDialog(
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
-                enabled = passphrase.length >= minimumLength,
+                enabled = (name == null || name.isNotBlank()) && passphrase.length >= minimumLength,
             ) {
                 Text(actionLabel)
             }

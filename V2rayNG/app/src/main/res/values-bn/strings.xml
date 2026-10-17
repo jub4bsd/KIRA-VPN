@@ -468,6 +468,7 @@
     <string name="kira_secure_import_title">KIRA ফাইল আনলক করুন</string>
     <string name="kira_secure_import_message">ফাইল শেয়ারকারী আলাদাভাবে যে পাসফ্রেজ পাঠিয়েছেন তা লিখুন।</string>
     <string name="kira_secure_passphrase_label">পাসফ্রেজ</string>
+    <string name="kira_secure_export_filename_label">ফাইলের নাম</string>
     <string name="kira_secure_export_action">এনক্রিপ্ট করা ফাইল শেয়ার করুন</string>
     <string name="kira_secure_import_action">আনলক করে আমদানি করুন</string>
     <string name="kira_secure_export_chooser">এনক্রিপ্ট করা KIRA ফাইল শেয়ার করুন</string>

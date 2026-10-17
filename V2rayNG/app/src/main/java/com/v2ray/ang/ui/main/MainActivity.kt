@@ -5,6 +5,7 @@ import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.KeyEvent
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
@@ -137,7 +138,7 @@ class MainActivity : HelperBaseComponentActivity() {
                     is MainAction.ShareClipboard -> shareToClipboard(action.guid)
                     is MainAction.ShareFullContent -> shareFullContentAsync(action.guid)
                     is MainAction.ExportKiraConfig ->
-                        shareEncryptedKiraConfig(action.guid, action.passphrase)
+                        shareEncryptedKiraConfig(action.guid, action.passphrase, action.fileName)
                     else -> mainViewModel.onAction(action)
                 }
             },
@@ -257,28 +258,67 @@ class MainActivity : HelperBaseComponentActivity() {
     private fun importConfigLocal() {
         launchFileChooser { uri ->
             if (uri == null) return@launchFileChooser
-            if (isKiraFile(uri)) {
-                requestKiraImport(uri)
-                return@launchFileChooser
-            }
-            try {
-                contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
-                    mainViewModel.onAction(MainAction.ImportBatchConfig(reader.readText()))
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    if (isKiraFile(uri)) {
+                        withContext(Dispatchers.Main) { requestKiraImport(uri) }
+                        return@launch
+                    }
+                    val configText = contentResolver.openInputStream(uri)
+                        ?.bufferedReader()
+                        ?.use { it.readText() }
+                        ?: throw IllegalArgumentException("Configuration file cannot be opened")
+                    withContext(Dispatchers.Main) {
+                        mainViewModel.onAction(MainAction.ImportBatchConfig(configText))
+                    }
+                } catch (e: Exception) {
+                    LogUtil.e(AppConfig.TAG, "Failed to read content from URI", e)
+                    withContext(Dispatchers.Main) {
+                        toastError(R.string.toast_failure)
+                    }
                 }
-            } catch (e: Exception) {
-                LogUtil.e(AppConfig.TAG, "Failed to read content from URI", e)
             }
         }
     }
 
-    private fun isKiraFile(uri: Uri): Boolean =
-        contentResolver.getType(uri) == KiraConfigCipher.MIME_TYPE ||
-            uri.lastPathSegment?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true
+    private fun isKiraFile(uri: Uri): Boolean {
+        if (contentResolver.getType(uri)
+                ?.equals(KiraConfigCipher.MIME_TYPE, ignoreCase = true) == true
+        ) return true
+        if (uri.lastPathSegment?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true) {
+            return true
+        }
+        return openableDisplayName(uri)
+            ?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true
+    }
+
+    private fun openableDisplayName(uri: Uri): String? =
+        runCatching {
+            contentResolver.query(
+                uri,
+                arrayOf(OpenableColumns.DISPLAY_NAME),
+                null,
+                null,
+                null,
+            )?.use { cursor ->
+                val nameColumn = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameColumn >= 0 && cursor.moveToFirst()) cursor.getString(nameColumn) else null
+            }
+        }.getOrNull()
 
     private fun handleIncomingKiraIntent(intent: Intent?) {
         if (intent?.action != Intent.ACTION_VIEW) return
         val uri = intent.data ?: return
-        if (isKiraFile(uri)) requestKiraImport(uri)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val isKira = runCatching { isKiraFile(uri) }.getOrElse { error ->
+                LogUtil.e(AppConfig.TAG, "Failed to inspect incoming KIRA file", error)
+                false
+            }
+            withContext(Dispatchers.Main) {
+                if (isKira) requestKiraImport(uri)
+                else toastError(R.string.toast_failure)
+            }
+        }
     }
 
     private fun requestKiraImport(uri: Uri) {
@@ -297,12 +337,15 @@ class MainActivity : HelperBaseComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val encryptedBytes = readKiraFile(uri)
-                val configText = String(
-                    KiraConfigCipher.decrypt(encryptedBytes, passphrase),
-                    StandardCharsets.UTF_8,
+                val payload = KiraConfigCipher.decodeExportPayload(
+                    KiraConfigCipher.decrypt(encryptedBytes, passphrase)
                 )
+                val profileName = payload.profileName ?: KiraConfigCipher.profileNameFromFileName(
+                    openableDisplayName(uri) ?: uri.lastPathSegment
+                )
+                val configText = payload.configText
                 withContext(Dispatchers.Main) {
-                    mainViewModel.onAction(MainAction.ImportKiraConfig(configText))
+                    mainViewModel.onAction(MainAction.ImportKiraConfig(configText, profileName))
                 }
             } catch (e: Exception) {
                 LogUtil.e(AppConfig.TAG, "Failed to unlock KIRA profile file", e)
@@ -332,23 +375,28 @@ class MainActivity : HelperBaseComponentActivity() {
         }
     }
 
-    private fun shareEncryptedKiraConfig(guid: String, passphrase: String) {
+    private fun shareEncryptedKiraConfig(guid: String, passphrase: String, fileName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val configText = AngConfigManager.kiraConfigForExport(guid)
                 require(configText.isNotBlank()) { "Profile cannot be exported as a KIRA link" }
-                val encrypted = KiraConfigCipher.encrypt(
-                    configText.toByteArray(StandardCharsets.UTF_8),
-                    passphrase,
+                val payload = KiraConfigCipher.encodeExportPayload(
+                    KiraConfigCipher.exportProfileName(fileName),
+                    configText,
                 )
+                val encrypted = KiraConfigCipher.encrypt(payload, passphrase)
                 val shareDirectory = File(cacheDir, "kira-share")
                 if (!shareDirectory.exists() && !shareDirectory.mkdirs()) {
                     throw IllegalStateException("Cannot create temporary export directory")
                 }
-                val file = File(
+                val exportDirectory = File(
                     shareDirectory,
-                    "KIRA-VPN-${System.currentTimeMillis()}${KiraConfigCipher.FILE_EXTENSION}",
+                    "${System.currentTimeMillis()}-${System.nanoTime()}",
                 )
+                if (!exportDirectory.mkdirs()) {
+                    throw IllegalStateException("Cannot create unique export directory")
+                }
+                val file = File(exportDirectory, KiraConfigCipher.exportFileName(fileName))
                 file.writeBytes(encrypted)
                 val uri = FileProvider.getUriForFile(
                     this@MainActivity,
