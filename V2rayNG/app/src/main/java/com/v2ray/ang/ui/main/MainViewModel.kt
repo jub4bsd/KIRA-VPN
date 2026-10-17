@@ -286,6 +286,7 @@ class MainViewModel(
             is MainAction.RemoveServer -> removeServerAndRefresh(action.guid)
             is MainAction.Search -> filterConfig(action.query)
             is MainAction.ImportBatchConfig -> importBatchConfig(action.configText)
+            is MainAction.ImportKiraConfig -> importKiraConfig(action.configText)
             MainAction.LocateHandled -> consumeLocateTarget()
             is MainAction.ShareQRCode -> {
                 val bitmap = dataSource.share2QRCode(action.guid)
@@ -306,7 +307,9 @@ class MainViewModel(
             MainAction.LocateSelectedServer,
             is MainAction.EditServer,
             is MainAction.ShareClipboard,
-            is MainAction.ShareFullContent -> {
+            is MainAction.ShareFullContent,
+            is MainAction.RequestKiraExport,
+            is MainAction.ExportKiraConfig -> {
                 // Handled by Activity via its onAction lambda
             }
         }
@@ -523,6 +526,32 @@ class MainViewModel(
                 } catch (e: Exception) {
                     LogUtil.e(AppConfig.TAG, "Failed to import batch config", e)
                     toastError(R.string.toast_failure)
+                }
+            }
+        }
+    }
+
+    private fun importKiraConfig(configText: String) {
+        launchLoading {
+            withContext(ioDispatcher) {
+                try {
+                    val guid = dataSource.importKiraConfig(
+                        configText,
+                        uiState.value.selectedGroupId,
+                    )
+                    if (guid == null) {
+                        toastError(R.string.kira_secure_import_failed)
+                        return@withContext
+                    }
+
+                    updateSelectedGuid(guid)
+                    setupGroupTab(forceRefresh = true)
+                    toast(dataSource.getString(R.string.title_import_config_count, 1))
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (e: Exception) {
+                    LogUtil.e(AppConfig.TAG, "Failed to import encrypted KIRA profile", e)
+                    toastError(R.string.kira_secure_import_failed)
                 }
             }
         }

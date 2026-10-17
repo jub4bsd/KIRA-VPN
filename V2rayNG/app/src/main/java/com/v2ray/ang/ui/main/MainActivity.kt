@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import android.content.Intent
+import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
@@ -9,6 +10,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
@@ -46,13 +49,20 @@ import com.v2ray.ang.ui.server.ServerWireguardActivity
 import com.v2ray.ang.ui.settings.SettingsActivity
 import com.v2ray.ang.ui.subscription.SubSettingActivity
 import com.v2ray.ang.ui.userasset.UserAssetActivity
+import com.v2ray.ang.util.KiraConfigCipher
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : HelperBaseComponentActivity() {
+
+    private var secureImportUri: Uri? = null
+    private var secureImportPendingState = mutableStateOf(false)
 
     private val mainViewModel: MainViewModel by viewModels {
         MainViewModel.Factory(application, MainRepository(application as AngApplication))
@@ -93,8 +103,15 @@ class MainActivity : HelperBaseComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainViewModel.onAction(MainAction.Initialize)
+        handleIncomingKiraIntent(intent)
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIncomingKiraIntent(intent)
     }
 
     @Composable
@@ -102,6 +119,9 @@ class MainActivity : HelperBaseComponentActivity() {
         BackHandler { moveTaskToBack(false) }
         MainScreen(
             mainViewModel = mainViewModel,
+            secureImportPending = secureImportPendingState.value,
+            onSecureImport = ::unlockKiraFile,
+            onDismissSecureImport = ::dismissKiraImport,
             onAction = { action ->
                 when (action) {
                     MainAction.ToggleService -> handleFabAction()
@@ -116,6 +136,8 @@ class MainActivity : HelperBaseComponentActivity() {
                     is MainAction.EditServer -> editServer(action.guid, action.profile)
                     is MainAction.ShareClipboard -> shareToClipboard(action.guid)
                     is MainAction.ShareFullContent -> shareFullContentAsync(action.guid)
+                    is MainAction.ExportKiraConfig ->
+                        shareEncryptedKiraConfig(action.guid, action.passphrase)
                     else -> mainViewModel.onAction(action)
                 }
             },
@@ -235,12 +257,122 @@ class MainActivity : HelperBaseComponentActivity() {
     private fun importConfigLocal() {
         launchFileChooser { uri ->
             if (uri == null) return@launchFileChooser
+            if (isKiraFile(uri)) {
+                requestKiraImport(uri)
+                return@launchFileChooser
+            }
             try {
                 contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
                     mainViewModel.onAction(MainAction.ImportBatchConfig(reader.readText()))
                 }
             } catch (e: Exception) {
                 LogUtil.e(AppConfig.TAG, "Failed to read content from URI", e)
+            }
+        }
+    }
+
+    private fun isKiraFile(uri: Uri): Boolean =
+        contentResolver.getType(uri) == KiraConfigCipher.MIME_TYPE ||
+            uri.lastPathSegment?.endsWith(KiraConfigCipher.FILE_EXTENSION, ignoreCase = true) == true
+
+    private fun handleIncomingKiraIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) return
+        val uri = intent.data ?: return
+        if (isKiraFile(uri)) requestKiraImport(uri)
+    }
+
+    private fun requestKiraImport(uri: Uri) {
+        secureImportUri = uri
+        secureImportPendingState.value = true
+    }
+
+    private fun dismissKiraImport() {
+        secureImportUri = null
+        secureImportPendingState.value = false
+    }
+
+    private fun unlockKiraFile(passphrase: String) {
+        val uri = secureImportUri ?: return
+        dismissKiraImport()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val encryptedBytes = readKiraFile(uri)
+                val configText = String(
+                    KiraConfigCipher.decrypt(encryptedBytes, passphrase),
+                    StandardCharsets.UTF_8,
+                )
+                withContext(Dispatchers.Main) {
+                    mainViewModel.onAction(MainAction.ImportKiraConfig(configText))
+                }
+            } catch (e: Exception) {
+                LogUtil.e(AppConfig.TAG, "Failed to unlock KIRA profile file", e)
+                withContext(Dispatchers.Main) {
+                    toastError(R.string.kira_secure_import_failed)
+                    requestKiraImport(uri)
+                }
+            }
+        }
+    }
+
+    private fun readKiraFile(uri: Uri): ByteArray {
+        val input = contentResolver.openInputStream(uri)
+            ?: throw IllegalArgumentException("KIRA file cannot be opened")
+        input.use { stream ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(8 * 1024)
+            while (true) {
+                val count = stream.read(buffer)
+                if (count < 0) break
+                require(output.size() + count <= KiraConfigCipher.MAX_FILE_BYTES) {
+                    "KIRA file is too large"
+                }
+                output.write(buffer, 0, count)
+            }
+            return output.toByteArray()
+        }
+    }
+
+    private fun shareEncryptedKiraConfig(guid: String, passphrase: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val configText = AngConfigManager.kiraConfigForExport(guid)
+                require(configText.isNotBlank()) { "Profile cannot be exported as a KIRA link" }
+                val encrypted = KiraConfigCipher.encrypt(
+                    configText.toByteArray(StandardCharsets.UTF_8),
+                    passphrase,
+                )
+                val shareDirectory = File(cacheDir, "kira-share")
+                if (!shareDirectory.exists() && !shareDirectory.mkdirs()) {
+                    throw IllegalStateException("Cannot create temporary export directory")
+                }
+                val file = File(
+                    shareDirectory,
+                    "KIRA-VPN-${System.currentTimeMillis()}${KiraConfigCipher.FILE_EXTENSION}",
+                )
+                file.writeBytes(encrypted)
+                val uri = FileProvider.getUriForFile(
+                    this@MainActivity,
+                    "$packageName.cache",
+                    file,
+                )
+                withContext(Dispatchers.Main) {
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = KiraConfigCipher.MIME_TYPE
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    startActivity(
+                        Intent.createChooser(
+                            sendIntent,
+                            getString(R.string.kira_secure_export_chooser),
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                LogUtil.e(AppConfig.TAG, "Failed to create encrypted KIRA profile file", e)
+                withContext(Dispatchers.Main) {
+                    toastError(R.string.kira_secure_export_failed)
+                }
             }
         }
     }

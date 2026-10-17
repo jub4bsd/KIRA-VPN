@@ -190,6 +190,9 @@ class MainRepository(
         updateUI: Boolean
     ): Pair<Int, Int> = AngConfigManager.importBatchConfig(server, subscriptionId, updateUI)
 
+    override fun importKiraConfig(configText: String, subscriptionId: String): String? =
+        AngConfigManager.importKiraConfig(configText, subscriptionId)
+
     override fun updateConfigViaSubAll(): SubscriptionUpdateResult =
         AngConfigManager.updateConfigViaSubAll()
 

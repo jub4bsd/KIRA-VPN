@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">সুইচ</string>
     <string name="app_tile_name">সুইচ</string>
     <string name="app_tile_first_use">এই ফিচারটি প্রথম ব্যবহার করা হচ্ছে, সার্ভার যোগ করতে অ্যাপটি ব্যবহার করুন</string>
@@ -461,7 +461,18 @@
 
     <string name="share_method_qrcode">QR কোড</string>
     <string name="share_method_clipboard">প্রোফাইল লিংক কপি করুন</string>
+    <string name="kira_secure_export_menu">এনক্রিপ্ট করা KIRA ফাইল রপ্তানি করুন</string>
     <string name="share_method_full_content">পূর্ণ কনফিগারেশন কপি করুন</string>
+    <string name="kira_secure_export_title">এনক্রিপ্ট করা KIRA ফাইল রপ্তানি</string>
+    <string name="kira_secure_export_message">কমপক্ষে ১২ অক্ষরের পাসফ্রেজ ব্যবহার করুন। এটি পাবলিক Telegram পোস্টে নয়, আলাদাভাবে পাঠান।</string>
+    <string name="kira_secure_import_title">KIRA ফাইল আনলক করুন</string>
+    <string name="kira_secure_import_message">ফাইল শেয়ারকারী আলাদাভাবে যে পাসফ্রেজ পাঠিয়েছেন তা লিখুন।</string>
+    <string name="kira_secure_passphrase_label">পাসফ্রেজ</string>
+    <string name="kira_secure_export_action">এনক্রিপ্ট করা ফাইল শেয়ার করুন</string>
+    <string name="kira_secure_import_action">আনলক করে আমদানি করুন</string>
+    <string name="kira_secure_export_chooser">এনক্রিপ্ট করা KIRA ফাইল শেয়ার করুন</string>
+    <string name="kira_secure_export_failed">এনক্রিপ্ট করা KIRA ফাইল তৈরি করা যায়নি।</string>
+    <string name="kira_secure_import_failed">KIRA ফাইল খোলা বা আমদানি করা যায়নি। পাসফ্রেজ যাচাই করে আবার চেষ্টা করুন।</string>
     <string name="action_edit">সম্পাদনা</string>
     <string name="action_delete">মুছুন</string>
     <string name="action_close">বন্ধ করুন</string>

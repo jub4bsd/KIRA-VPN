@@ -146,14 +146,51 @@ object AngConfigManager {
     }
 
     /**
+     * Creates the single-protocol payload used inside an encrypted KIRA file.
+     * The generic label avoids exporting the profile's identifying remark.
+     */
+    fun kiraConfigForExport(guid: String): String = shareConfig(guid, "KIRA VPN")
+
+    /**
+     * Imports exactly one supported protocol URI. It deliberately does not accept subscription
+     * URLs, batches, or raw JSON, so opening a KIRA file cannot trigger a remote fetch.
+     */
+    fun importKiraConfig(configText: String, subid: String): String? {
+        val text = configText.trim()
+        if (text.isEmpty() || text.contains('\n') || text.contains('\r')) return null
+
+        val profile = parseConfig(text, subid, null) ?: return null
+        profile.remarks = "KIRA VPN"
+        profile.description = null
+        profile.kiraProtected = true
+
+        val guid = Utils.getUuid()
+        return try {
+            MmkvManager.saveServerProfiles(
+                profiles = linkedMapOf(guid to profile),
+                rawConfigs = emptyMap(),
+                subscriptionId = subid,
+                append = true,
+            )
+            guid
+        } catch (e: Exception) {
+            LogUtil.e(AppConfig.TAG, "Failed to store imported KIRA profile", e)
+            null
+        }
+    }
+
+    /**
      * Shares the configuration.
      *
      * @param guid The GUID of the configuration.
      * @return The configuration string.
      */
-    private fun shareConfig(guid: String): String {
+    private fun shareConfig(guid: String, remarksOverride: String? = null): String {
         try {
-            val config = MmkvManager.decodeServerConfig(guid) ?: return ""
+            val storedConfig = MmkvManager.decodeServerConfig(guid) ?: return ""
+            val config = remarksOverride?.let {
+                storedConfig.copy(remarks = it, description = null)
+            } ?: storedConfig
 
             return config.configType.protocolScheme + when (config.configType) {
                 EConfigType.VMESS -> VmessFmt.toUri(config)

@@ -360,19 +360,21 @@ private fun ServerListItem(
                         )
                     }
                 } else {
-                    IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_share_24dp),
-                            stringResource(R.string.title_configuration_share),
-                            Modifier.size(24.dp)
-                        )
-                    }
-                    IconButton(onClick = { actions.edit(row.guid, row.profile) }, Modifier.size(36.dp)) {
-                        Icon(
-                            painterResource(R.drawable.ic_edit_24dp),
-                            stringResource(R.string.acc_edit),
-                            Modifier.size(24.dp)
-                        )
+                    if (!row.profile.kiraProtected) {
+                        IconButton(onClick = { actions.share(row.guid, row.profile) }, Modifier.size(36.dp)) {
+                            Icon(
+                                painterResource(R.drawable.ic_share_24dp),
+                                stringResource(R.string.title_configuration_share),
+                                Modifier.size(24.dp)
+                            )
+                        }
+                        IconButton(onClick = { actions.edit(row.guid, row.profile) }, Modifier.size(36.dp)) {
+                            Icon(
+                                painterResource(R.drawable.ic_edit_24dp),
+                                stringResource(R.string.acc_edit),
+                                Modifier.size(24.dp)
+                            )
+                        }
                     }
                     IconButton(onClick = { actions.remove(row.guid) }, Modifier.size(36.dp)) {
                         Icon(

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">آلشت</string>
     <string name="app_tile_name">آلشت</string>
     <string name="app_tile_first_use">سی کرت ٱولی و کار بوردن ای ویژیی، ٱول ز من برنومه ی سرور اضاف کۊنین</string>
@@ -461,7 +461,18 @@
 
     <string name="share_method_qrcode">کود QR</string>
     <string name="share_method_clipboard">لف گیری لینک کانفیگ</string>
+    <string name="kira_secure_export_menu">خروجی گرفتن فایل رمزنگاری‌شده KIRA</string>
     <string name="share_method_full_content">لف گیری پوی کانفیگ</string>
+    <string name="kira_secure_export_title">خروجی فایل رمزنگاری‌شده KIRA</string>
+    <string name="kira_secure_export_message">یک عبارت عبور حداقل ۱۲ نویسه‌ای انتخاب کن. رمز را جداگانه بفرست، نه داخل پست عمومی تلگرام.</string>
+    <string name="kira_secure_import_title">باز کردن فایل KIRA</string>
+    <string name="kira_secure_import_message">عبارت عبوری را وارد کن که فرستنده فایل جداگانه فرستاده است.</string>
+    <string name="kira_secure_passphrase_label">عبارت عبور</string>
+    <string name="kira_secure_export_action">اشتراک‌گذاری فایل رمزنگاری‌شده</string>
+    <string name="kira_secure_import_action">باز کردن و وارد کردن</string>
+    <string name="kira_secure_export_chooser">اشتراک‌گذاری فایل KIRA رمزنگاری‌شده</string>
+    <string name="kira_secure_export_failed">ساخت فایل رمزنگاری‌شده KIRA انجام نشد.</string>
+    <string name="kira_secure_import_failed">باز کردن یا وارد کردن فایل KIRA انجام نشد. عبارت عبور را بررسی و دوباره تلاش کن.</string>
     <string name="action_edit">آلشتکاری</string>
     <string name="action_delete">پاک کردن</string>
     <string name="action_close">بستن</string>

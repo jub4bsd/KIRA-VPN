@@ -62,6 +62,9 @@ sealed interface MainAction {
     data class ShareQRCode(val guid: String) : MainAction
     data class ShareClipboard(val guid: String) : MainAction
     data class ShareFullContent(val guid: String) : MainAction
+    data class RequestKiraExport(val guid: String) : MainAction
+    data class ExportKiraConfig(val guid: String, val passphrase: String) : MainAction
+    data class ImportKiraConfig(val configText: String) : MainAction
     data object DismissQRCodeDialog : MainAction
 
     data class ImportBatchConfig(val configText: String) : MainAction

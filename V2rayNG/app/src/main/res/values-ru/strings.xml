@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">v2rayNG</string>
     <string name="app_tile_name">v2rayNG</string>
     <string name="app_tile_first_use">Добавьте профиль в приложении перед использованием этой функции.</string>
@@ -465,7 +465,18 @@
 
     <string name="share_method_qrcode">QR-код</string>
     <string name="share_method_clipboard">Копировать ссылку профиля</string>
+    <string name="kira_secure_export_menu">Экспортировать зашифрованный файл KIRA</string>
     <string name="share_method_full_content">Копировать полную конфигурацию</string>
+    <string name="kira_secure_export_title">Экспорт зашифрованного файла KIRA</string>
+    <string name="kira_secure_export_message">Используйте парольную фразу длиной не менее 12 символов. Отправьте её получателям отдельно, не в публичной публикации Telegram.</string>
+    <string name="kira_secure_import_title">Разблокировать файл KIRA</string>
+    <string name="kira_secure_import_message">Введите парольную фразу, которую отправитель передал отдельно.</string>
+    <string name="kira_secure_passphrase_label">Парольная фраза</string>
+    <string name="kira_secure_export_action">Поделиться зашифрованным файлом</string>
+    <string name="kira_secure_import_action">Разблокировать и импортировать</string>
+    <string name="kira_secure_export_chooser">Поделиться зашифрованным файлом KIRA</string>
+    <string name="kira_secure_export_failed">Не удалось создать зашифрованный файл KIRA.</string>
+    <string name="kira_secure_import_failed">Не удалось открыть или импортировать файл KIRA. Проверьте парольную фразу и повторите попытку.</string>
     <string name="action_edit">Изменить</string>
     <string name="action_delete">Удалить</string>
     <string name="action_close">Закрыть</string>

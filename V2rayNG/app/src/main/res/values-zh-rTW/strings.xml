@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">開關</string>
     <string name="app_tile_name">開關</string>
     <string name="app_tile_first_use">首次使用此功能，請使用此應用程式新增伺服器</string>
@@ -459,7 +459,18 @@
 
     <string name="share_method_qrcode">QR Code</string>
     <string name="share_method_clipboard">複製設定連結</string>
+    <string name="kira_secure_export_menu">匯出加密的 KIRA 檔案</string>
     <string name="share_method_full_content">複製完整設定</string>
+    <string name="kira_secure_export_title">匯出加密的 KIRA 檔案</string>
+    <string name="kira_secure_export_message">請使用至少 12 個字元的密語。請透過另一個私密管道傳送密語，不要放在公開的 Telegram 貼文中。</string>
+    <string name="kira_secure_import_title">解除鎖定 KIRA 檔案</string>
+    <string name="kira_secure_import_message">請輸入分享檔案的人另外傳送給您的密語。</string>
+    <string name="kira_secure_passphrase_label">密語</string>
+    <string name="kira_secure_export_action">分享加密檔案</string>
+    <string name="kira_secure_import_action">解除鎖定並匯入</string>
+    <string name="kira_secure_export_chooser">分享加密的 KIRA 檔案</string>
+    <string name="kira_secure_export_failed">無法建立加密的 KIRA 檔案。</string>
+    <string name="kira_secure_import_failed">無法解除鎖定或匯入 KIRA 檔案。請檢查密語後再試一次。</string>
     <string name="action_edit">編輯</string>
     <string name="action_delete">刪除</string>
     <string name="action_close">關閉</string>

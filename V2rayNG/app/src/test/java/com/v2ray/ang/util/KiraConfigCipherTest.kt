@@ -1,0 +1,61 @@
+package com.v2ray.ang.util
+
+import javax.crypto.AEADBadTagException
+import javax.crypto.Mac
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import javax.crypto.spec.SecretKeySpec
+
+class KiraConfigCipherTest {
+    private val passphrase = "a-long-private-passphrase"
+    private val plaintext = "vless://example-profile".toByteArray()
+
+    @Test
+    fun encryptedFileRoundTripsAndDoesNotContainPlaintext() {
+        val file = KiraConfigCipher.encrypt(plaintext, passphrase)
+
+        assertArrayEquals(plaintext, KiraConfigCipher.decrypt(file, passphrase))
+        assertFalse(file.toString(Charsets.ISO_8859_1).contains("vless://"))
+        assertTrue(file.size <= KiraConfigCipher.MAX_FILE_BYTES)
+    }
+
+    @Test
+    fun pbkdf2MatchesKnownHmacSha256Vector() {
+        val mac = Mac.getInstance("HmacSHA256").apply {
+            init(SecretKeySpec("password".toByteArray(), "HmacSHA256"))
+        }
+
+        assertArrayEquals(
+            "120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b".hexToBytes(),
+            KiraConfigCipher.pbkdf2HmacSha256(mac, "salt".toByteArray(), 1, 32),
+        )
+    }
+
+    @Test(expected = AEADBadTagException::class)
+    fun wrongPassphraseIsRejected() {
+        KiraConfigCipher.decrypt(KiraConfigCipher.encrypt(plaintext, passphrase), "another-private-passphrase")
+    }
+
+    @Test(expected = AEADBadTagException::class)
+    fun modifiedCiphertextIsRejected() {
+        val file = KiraConfigCipher.encrypt(plaintext, passphrase)
+        file[file.lastIndex] = (file.last().toInt() xor 1).toByte()
+
+        KiraConfigCipher.decrypt(file, passphrase)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun shortPassphraseCannotCreateAFile() {
+        KiraConfigCipher.encrypt(plaintext, "too-short")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun invalidHeaderIsRejected() {
+        KiraConfigCipher.decrypt(ByteArray(64), passphrase)
+    }
+
+    private fun String.hexToBytes(): ByteArray =
+        chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+}

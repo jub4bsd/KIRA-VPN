@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">Kết nối ngay</string>
     <string name="app_tile_name">Kết nối ngay</string>
     <string name="app_tile_first_use">Vui lòng thêm một cấu hình vào v2rayNG để sử dụng!</string>
@@ -459,7 +459,18 @@
 
     <string name="share_method_qrcode">Mã QR</string>
     <string name="share_method_clipboard">Sao chép liên kết cấu hình</string>
+    <string name="kira_secure_export_menu">Xuất tệp KIRA đã mã hóa</string>
     <string name="share_method_full_content">Sao chép toàn bộ cấu hình</string>
+    <string name="kira_secure_export_title">Xuất tệp KIRA đã mã hóa</string>
+    <string name="kira_secure_export_message">Dùng cụm mật khẩu dài ít nhất 12 ký tự. Gửi riêng cho người nhận, không đăng trong bài Telegram công khai.</string>
+    <string name="kira_secure_import_title">Mở khóa tệp KIRA</string>
+    <string name="kira_secure_import_message">Nhập cụm mật khẩu mà người gửi đã gửi riêng cho bạn.</string>
+    <string name="kira_secure_passphrase_label">Cụm mật khẩu</string>
+    <string name="kira_secure_export_action">Chia sẻ tệp đã mã hóa</string>
+    <string name="kira_secure_import_action">Mở khóa và nhập</string>
+    <string name="kira_secure_export_chooser">Chia sẻ tệp KIRA đã mã hóa</string>
+    <string name="kira_secure_export_failed">Không thể tạo tệp KIRA đã mã hóa.</string>
+    <string name="kira_secure_import_failed">Không thể mở hoặc nhập tệp KIRA. Hãy kiểm tra cụm mật khẩu rồi thử lại.</string>
     <string name="action_edit">Chỉnh sửa</string>
     <string name="action_delete">Xoá</string>
     <string name="action_close">Đóng</string>
