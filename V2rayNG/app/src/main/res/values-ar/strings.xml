@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">التبديل</string>
     <string name="app_tile_name">التبديل</string>
     <string name="app_tile_first_use">أول استخدام لهذه الميزة، يرجى استخدام التطبيق لإضافة خادم</string>
@@ -469,7 +469,18 @@
 
     <string name="share_method_qrcode">رمز QR</string>
     <string name="share_method_clipboard">نسخ رابط التكوين</string>
+    <string name="kira_secure_export_menu">تصدير ملف KIRA مشفّر</string>
     <string name="share_method_full_content">نسخ التكوين الكامل</string>
+    <string name="kira_secure_export_title">تصدير ملف KIRA مشفّر</string>
+    <string name="kira_secure_export_message">استخدم عبارة مرور من 12 حرفًا على الأقل. أرسلها للمستلمين بشكل منفصل، لا في منشور Telegram عام.</string>
+    <string name="kira_secure_import_title">فتح ملف KIRA المشفّر</string>
+    <string name="kira_secure_import_message">أدخل عبارة المرور التي أرسلها ناشر الملف بشكل منفصل.</string>
+    <string name="kira_secure_passphrase_label">عبارة المرور</string>
+    <string name="kira_secure_export_action">مشاركة الملف المشفّر</string>
+    <string name="kira_secure_import_action">فك القفل والاستيراد</string>
+    <string name="kira_secure_export_chooser">مشاركة ملف KIRA المشفّر</string>
+    <string name="kira_secure_export_failed">تعذّر إنشاء ملف KIRA المشفّر.</string>
+    <string name="kira_secure_import_failed">تعذّر فتح ملف KIRA أو استيراده. تحقق من عبارة المرور وحاول مجددًا.</string>
     <string name="action_edit">تعديل</string>
     <string name="action_delete">حذف</string>
     <string name="action_close">إغلاق</string>

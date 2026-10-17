@@ -2,17 +2,29 @@ package com.v2ray.ang.ui.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,11 +34,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.R
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.ui.compose.LocalDarkTheme
 import com.v2ray.ang.ui.compose.QRCodeDialog
@@ -38,6 +56,9 @@ fun MainScreen(
     mainViewModel: MainViewModel,
     onAction: (MainAction) -> Unit,
     onNavigate: (MainDestination) -> Unit,
+    secureImportPending: Boolean,
+    onSecureImport: (String) -> Unit,
+    onDismissSecureImport: () -> Unit,
 ) {
     val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
     val groups = uiState.groups
@@ -58,6 +79,9 @@ fun MainScreen(
     var showDelDuplicateConfirm by remember { mutableStateOf(false) }
     var showDelInvalidConfirm by remember { mutableStateOf(false) }
     var showRemoveConfirm by remember { mutableStateOf<String?>(null) }
+    var secureExportGuid by rememberSaveable { mutableStateOf<String?>(null) }
+    var secureExportPassphrase by rememberSaveable(secureExportGuid) { mutableStateOf("") }
+    var secureImportPassphrase by rememberSaveable { mutableStateOf("") }
 
     var shareTarget by remember { mutableStateOf<Triple<String, ProfileItem, Boolean>?>(null) }
     val removeServer: (String) -> Unit = { guid ->
@@ -122,8 +146,55 @@ fun MainScreen(
             profile = profile,
             more = more,
             onDismiss = { shareTarget = null },
-            onAction = onAction,
+            onAction = { action ->
+                if (action is MainAction.RequestKiraExport) {
+                    secureExportGuid = action.guid
+                    secureExportPassphrase = ""
+                } else {
+                    onAction(action)
+                }
+            },
             onRemove = removeServer,
+        )
+    }
+    if (secureExportGuid != null) {
+        KiraPassphraseDialog(
+            title = stringResource(R.string.kira_secure_export_title),
+            message = stringResource(R.string.kira_secure_export_message),
+            actionLabel = stringResource(R.string.kira_secure_export_action),
+            passphrase = secureExportPassphrase,
+            minimumLength = com.v2ray.ang.util.KiraConfigCipher.MIN_PASSPHRASE_LENGTH,
+            onPassphraseChange = { secureExportPassphrase = it },
+            onConfirm = {
+                val guid = secureExportGuid
+                if (guid != null) {
+                    onAction(MainAction.ExportKiraConfig(guid, secureExportPassphrase))
+                }
+                secureExportGuid = null
+                secureExportPassphrase = ""
+            },
+            onDismiss = {
+                secureExportGuid = null
+                secureExportPassphrase = ""
+            },
+        )
+    }
+    if (secureImportPending) {
+        KiraPassphraseDialog(
+            title = stringResource(R.string.kira_secure_import_title),
+            message = stringResource(R.string.kira_secure_import_message),
+            actionLabel = stringResource(R.string.kira_secure_import_action),
+            passphrase = secureImportPassphrase,
+            minimumLength = com.v2ray.ang.util.KiraConfigCipher.MIN_PASSPHRASE_LENGTH,
+            onPassphraseChange = { secureImportPassphrase = it },
+            onConfirm = {
+                onSecureImport(secureImportPassphrase)
+                secureImportPassphrase = ""
+            },
+            onDismiss = {
+                secureImportPassphrase = ""
+                onDismissSecureImport()
+            },
         )
     }
     if (shareQRCodeBitmap != null) {
@@ -250,4 +321,55 @@ fun MainScreen(
             }
         }
     }
+}
+
+@Composable
+private fun KiraPassphraseDialog(
+    title: String,
+    message: String,
+    actionLabel: String,
+    passphrase: String,
+    minimumLength: Int,
+    onPassphraseChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .consumeWindowInsets(WindowInsets.navigationBars),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(message)
+                OutlinedTextField(
+                    value = passphrase,
+                    onValueChange = onPassphraseChange,
+                    label = { Text(stringResource(R.string.kira_secure_passphrase_label)) },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                enabled = passphrase.length >= minimumLength,
+            ) {
+                Text(actionLabel)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+    )
 }

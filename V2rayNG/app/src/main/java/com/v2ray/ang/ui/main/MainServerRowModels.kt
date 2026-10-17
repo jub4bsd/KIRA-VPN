@@ -30,8 +30,11 @@ internal fun buildServerRowUiModel(
         guid = server.guid,
         profile = profile,
         remarks = profile.remarks,
-        statistics = profile.description.nullIfBlank()
-            ?: AngConfigManager.generateDescription(profile),
+        statistics = if (profile.kiraProtected) {
+            ""
+        } else {
+            profile.description.nullIfBlank() ?: AngConfigManager.generateDescription(profile)
+        },
         typeDescription = serverProtocolDescription(profile),
         testDelayMillis = server.testDelayMillis,
         subscriptionBadge = subscriptionRemarks.firstOrNull()?.toString().orEmpty(),

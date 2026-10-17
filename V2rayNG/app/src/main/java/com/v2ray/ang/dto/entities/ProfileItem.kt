@@ -12,6 +12,7 @@ data class ProfileItem(
 
     var remarks: String = "",
     var description: String? = null,
+    var kiraProtected: Boolean = false,
     var server: String? = null,
     var serverPort: String? = null,
 
@@ -96,6 +97,7 @@ data class ProfileItem(
      * - addedTime
      * - remarks
      * - description
+     * - KIRA protected-share UI state
      *
      * All other fields, including configType, are included in the comparison.
      *
@@ -107,6 +109,7 @@ data class ProfileItem(
             subscriptionId = "",
             addedTime = 0L,
             remarks = "",
-            description = null
+            description = null,
+            kiraProtected = false,
         )
 }

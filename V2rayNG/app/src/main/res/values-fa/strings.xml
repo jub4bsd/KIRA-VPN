@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">KIRA VPN</string>
     <string name="app_widget_name">تعویض</string>
     <string name="app_tile_name">تعویض</string>
     <string name="app_tile_first_use">برای اولین استفاده از این قابلیت، لطفاً ابتدا از داخل برنامه یک سرور اضافه کنید</string>
@@ -461,7 +461,18 @@
 
     <string name="share_method_qrcode">کد QR</string>
     <string name="share_method_clipboard">کپی لینک کانفیگ</string>
+    <string name="kira_secure_export_menu">صدور فایل رمزگذاری‌شده KIRA</string>
     <string name="share_method_full_content">کپی کانفیگ کامل</string>
+    <string name="kira_secure_export_title">صدور فایل رمزگذاری‌شده KIRA</string>
+    <string name="kira_secure_export_message">یک عبارت عبور حداقل ۱۲ نویسه‌ای انتخاب کنید. آن را جداگانه برای دریافت‌کنندگان بفرستید، نه در پست عمومی تلگرام.</string>
+    <string name="kira_secure_import_title">باز کردن فایل KIRA</string>
+    <string name="kira_secure_import_message">عبارت عبوری را وارد کنید که فرستنده فایل جداگانه برایتان فرستاده است.</string>
+    <string name="kira_secure_passphrase_label">عبارت عبور</string>
+    <string name="kira_secure_export_action">اشتراک‌گذاری فایل رمزگذاری‌شده</string>
+    <string name="kira_secure_import_action">باز کردن و وارد کردن</string>
+    <string name="kira_secure_export_chooser">اشتراک‌گذاری فایل رمزگذاری‌شده KIRA</string>
+    <string name="kira_secure_export_failed">ساخت فایل رمزگذاری‌شده KIRA ممکن نشد.</string>
+    <string name="kira_secure_import_failed">باز کردن یا وارد کردن فایل KIRA ممکن نشد. عبارت عبور را بررسی و دوباره تلاش کنید.</string>
     <string name="action_edit">ویرایش</string>
     <string name="action_delete">حذف</string>
     <string name="action_close">بستن</string>

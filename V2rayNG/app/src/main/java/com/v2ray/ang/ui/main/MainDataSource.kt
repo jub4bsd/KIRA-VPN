@@ -48,6 +48,7 @@ interface MainDataSource : Closeable {
         subscriptionId: String,
         updateUI: Boolean
     ): Pair<Int, Int>
+    fun importKiraConfig(configText: String, subscriptionId: String): String?
 
     fun updateConfigViaSubAll(): SubscriptionUpdateResult
     fun updateConfigViaSub(subscriptionCache: SubscriptionCache): SubscriptionUpdateResult

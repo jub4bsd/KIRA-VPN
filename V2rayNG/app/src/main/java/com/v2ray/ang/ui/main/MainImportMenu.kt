@@ -46,6 +46,7 @@ internal enum class ServerMenuAction(
 ) {
     ShareQRCode(R.string.share_method_qrcode, isShareAction = true, supportsComplexProfiles = false),
     ShareClipboard(R.string.share_method_clipboard, isShareAction = true, supportsComplexProfiles = false),
+    ExportKira(R.string.kira_secure_export_menu, isShareAction = true, supportsComplexProfiles = true),
     ShareFullContent(R.string.share_method_full_content, isShareAction = true, supportsComplexProfiles = true),
     Edit(R.string.action_edit, isShareAction = false, supportsComplexProfiles = true),
     Delete(R.string.action_delete, isShareAction = false, supportsComplexProfiles = true),
@@ -54,8 +55,17 @@ internal enum class ServerMenuAction(
 internal fun serverMenuActions(
     isComplexProfile: Boolean,
     includeManagementActions: Boolean,
-): List<ServerMenuAction> = ServerMenuAction.entries.filter { action ->
-    (includeManagementActions || action.isShareAction) && (!isComplexProfile || action.supportsComplexProfiles)
+    supportsKiraExport: Boolean = false,
+    kiraProtected: Boolean = false,
+): List<ServerMenuAction> {
+    if (kiraProtected) {
+        return if (includeManagementActions) listOf(ServerMenuAction.Delete) else emptyList()
+    }
+    return ServerMenuAction.entries.filter { action ->
+        (includeManagementActions || action.isShareAction) &&
+            (!isComplexProfile || action.supportsComplexProfiles) &&
+            (action != ServerMenuAction.ExportKira || supportsKiraExport)
+    }
 }
 
 @Composable
@@ -84,6 +94,16 @@ fun ShareMethodDialog(
     val menuActions = serverMenuActions(
         isComplexProfile = profile.configType.isComplexType(),
         includeManagementActions = more,
+        supportsKiraExport = profile.configType in setOf(
+            EConfigType.VMESS,
+            EConfigType.SHADOWSOCKS,
+            EConfigType.SOCKS,
+            EConfigType.VLESS,
+            EConfigType.TROJAN,
+            EConfigType.WIREGUARD,
+            EConfigType.HYSTERIA2,
+        ),
+        kiraProtected = profile.kiraProtected,
     )
     SelectListDialog(
         options = menuActions,
@@ -93,6 +113,7 @@ fun ShareMethodDialog(
             when (action) {
                 ServerMenuAction.ShareQRCode -> onAction(MainAction.ShareQRCode(guid))
                 ServerMenuAction.ShareClipboard -> onAction(MainAction.ShareClipboard(guid))
+                ServerMenuAction.ExportKira -> onAction(MainAction.RequestKiraExport(guid))
                 ServerMenuAction.ShareFullContent -> onAction(MainAction.ShareFullContent(guid))
                 ServerMenuAction.Edit -> onAction(MainAction.EditServer(guid, profile))
                 ServerMenuAction.Delete -> onRemove(guid)

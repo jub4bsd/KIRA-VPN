@@ -18,8 +18,44 @@ class MainImportMenuTest {
     @Test
     fun regularMoreMenuContainsEveryActionInDisplayOrder() {
         assertEquals(
-            ServerMenuAction.entries,
+            listOf(
+                ServerMenuAction.ShareQRCode,
+                ServerMenuAction.ShareClipboard,
+                ServerMenuAction.ShareFullContent,
+                ServerMenuAction.Edit,
+                ServerMenuAction.Delete,
+            ),
             serverMenuActions(isComplexProfile = false, includeManagementActions = true),
+        )
+    }
+
+    @Test
+    fun supportedProfileOffersEncryptedKiraExport() {
+        assertEquals(
+            listOf(
+                ServerMenuAction.ShareQRCode,
+                ServerMenuAction.ShareClipboard,
+                ServerMenuAction.ExportKira,
+                ServerMenuAction.ShareFullContent,
+            ),
+            serverMenuActions(
+                isComplexProfile = false,
+                includeManagementActions = false,
+                supportsKiraExport = true,
+            ),
+        )
+    }
+
+    @Test
+    fun protectedKiraProfileDoesNotOfferEditOrShare() {
+        assertEquals(
+            listOf(ServerMenuAction.Delete),
+            serverMenuActions(
+                isComplexProfile = false,
+                includeManagementActions = true,
+                supportsKiraExport = true,
+                kiraProtected = true,
+            ),
         )
     }
 
