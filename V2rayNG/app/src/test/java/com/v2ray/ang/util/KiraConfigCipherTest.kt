@@ -95,6 +95,29 @@ class KiraConfigCipherTest {
             KiraConfigCipher.profileNameFromFileName("x".repeat(80) + ".kira"))
     }
 
+    @Test
+    fun encryptedExportRetainsTheChosenUnicodeName() {
+        listOf("YOUTUBE 🇺🇲", "YOUTUBE 🇧🇪").forEach { fileName ->
+            val profileName = KiraConfigCipher.exportProfileName(fileName)
+            val payload = KiraConfigCipher.encodeExportPayload(profileName, "vless://example-profile")
+            val encrypted = KiraConfigCipher.encrypt(payload, passphrase)
+            val imported = KiraConfigCipher.decodeExportPayload(
+                KiraConfigCipher.decrypt(encrypted, passphrase)
+            )
+            assertEquals(fileName, imported.profileName)
+            assertEquals("vless://example-profile", imported.configText)
+        }
+    }
+
+    @Test
+    fun decodeExportPayloadKeepsLegacyPlainConfigurationsImportable() {
+        val legacyConfig = "vless://legacy-profile"
+        assertEquals(
+            KiraConfigCipher.ExportPayload(null, legacyConfig),
+            KiraConfigCipher.decodeExportPayload(legacyConfig.toByteArray()),
+        )
+    }
+
     private fun String.hexToBytes(): ByteArray =
         chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }

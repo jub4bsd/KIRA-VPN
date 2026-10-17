@@ -336,14 +336,14 @@ class MainActivity : HelperBaseComponentActivity() {
         dismissKiraImport()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val profileName = KiraConfigCipher.profileNameFromFileName(
+                val encryptedBytes = readKiraFile(uri)
+                val payload = KiraConfigCipher.decodeExportPayload(
+                    KiraConfigCipher.decrypt(encryptedBytes, passphrase)
+                )
+                val profileName = payload.profileName ?: KiraConfigCipher.profileNameFromFileName(
                     openableDisplayName(uri) ?: uri.lastPathSegment
                 )
-                val encryptedBytes = readKiraFile(uri)
-                val configText = String(
-                    KiraConfigCipher.decrypt(encryptedBytes, passphrase),
-                    StandardCharsets.UTF_8,
-                )
+                val configText = payload.configText
                 withContext(Dispatchers.Main) {
                     mainViewModel.onAction(MainAction.ImportKiraConfig(configText, profileName))
                 }
@@ -380,10 +380,11 @@ class MainActivity : HelperBaseComponentActivity() {
             try {
                 val configText = AngConfigManager.kiraConfigForExport(guid)
                 require(configText.isNotBlank()) { "Profile cannot be exported as a KIRA link" }
-                val encrypted = KiraConfigCipher.encrypt(
-                    configText.toByteArray(StandardCharsets.UTF_8),
-                    passphrase,
+                val payload = KiraConfigCipher.encodeExportPayload(
+                    KiraConfigCipher.exportProfileName(fileName),
+                    configText,
                 )
+                val encrypted = KiraConfigCipher.encrypt(payload, passphrase)
                 val shareDirectory = File(cacheDir, "kira-share")
                 if (!shareDirectory.exists() && !shareDirectory.mkdirs()) {
                     throw IllegalStateException("Cannot create temporary export directory")
