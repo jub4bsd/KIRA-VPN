@@ -2,10 +2,6 @@ name: Build APK
 
 on:
   workflow_dispatch:
-    inputs:
-      release_tag:
-        required: false
-        type: string
   push:
     branches:
       - master
@@ -91,66 +87,40 @@ jobs:
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
         chmod 755 gradlew
-        ./gradlew licenseFdroidReleaseReport
-        ./gradlew assembleRelease
+        ./gradlew licensePlaystoreDebugReport
+        ./gradlew :app:assemblePlaystoreDebug
     
+    - name: Verify universal Play Store debug APK
+      run: |
+        APK="$(find "${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug" -type f -name '*universal*.apk' -print -quit)"
+        test -n "$APK"
+        "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose "$APK"
+
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v7
       if: ${{  success() }}
       with:
         name: arm64-v8a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*arm64-v8a*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*arm64-v8a*.apk
 
     - name: Upload armeabi-v7a APK
       uses: actions/upload-artifact@v7
       if: ${{  success() }}
       with:
         name: armeabi-v7a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*armeabi-v7a*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*armeabi-v7a*.apk
 
     - name: Upload x86 APK
       uses: actions/upload-artifact@v7
       if: ${{  success() }}
       with:
         name: x86-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*x86*.apk
 
     - name: Upload universal APK
       uses: actions/upload-artifact@v7
       if: ${{ success() }}
       with:
         name: universal-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*universal*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/debug/*universal*.apk
 
-  sign-and-release:
-    needs: build
-    runs-on: ubuntu-26.04
-    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
-
-    steps:
-      - name: Download APK artifacts
-        uses: actions/download-artifact@v8
-        with:
-          path: release
-
-      - name: Sign APK files
-        run: |
-          printf '%s' "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
-          KEY=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')
-          mkdir -p release-files
-
-          find release -type f -name '*.apk' | while read apk; do
-            cp "$apk" release-files/
-            gpg --batch --yes --local-user "$KEY" --detach-sign --output "release-files/$(basename "$apk").sig" "$apk"
-          done
-
-          gpg --armor --export "$KEY" > release-files/v2rayN-public-key.asc
-
-      - name: Upload APKs, signatures and public key to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          file: release-files/*
-          tag: ${{ inputs.release_tag }}
-          file_glob: true
-          prerelease: true
-          
