@@ -3,6 +3,7 @@ package com.v2ray.ang.util
 import javax.crypto.AEADBadTagException
 import javax.crypto.Mac
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -54,6 +55,30 @@ class KiraConfigCipherTest {
     @Test(expected = IllegalArgumentException::class)
     fun invalidHeaderIsRejected() {
         KiraConfigCipher.decrypt(ByteArray(64), passphrase)
+    }
+
+    @Test
+    fun exportFileNameUsesTheChosenNameAndAddsOnlyOneExtension() {
+        assertEquals("My profile.kira", KiraConfigCipher.exportFileName("My profile.kira"))
+        assertEquals("My profile.kira", KiraConfigCipher.exportFileName("My profile"))
+    }
+
+    @Test
+    fun exportFileNameRemovesPathCharactersAndUsesFallbackWhenEmpty() {
+        assertEquals("profile.kira", KiraConfigCipher.exportFileName("../profile"))
+        assertEquals("KIRA VPN.kira", KiraConfigCipher.exportFileName("../"))
+    }
+
+    @Test
+    fun profileNameIsTrimmedAndRejectsBlankOrTooLongValues() {
+        assertEquals("New node", KiraConfigCipher.normalizeProfileName("  New node  "))
+        assertEquals(null, KiraConfigCipher.normalizeProfileName("   "))
+        assertEquals(
+            null,
+            KiraConfigCipher.normalizeProfileName(
+                "x".repeat(KiraConfigCipher.MAX_PROFILE_NAME_CHARS + 1)
+            ),
+        )
     }
 
     private fun String.hexToBytes(): ByteArray =

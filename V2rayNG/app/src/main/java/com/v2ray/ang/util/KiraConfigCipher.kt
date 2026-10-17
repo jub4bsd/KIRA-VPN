@@ -18,8 +18,38 @@ object KiraConfigCipher {
     const val FILE_EXTENSION = ".kira"
     const val MIN_PASSPHRASE_LENGTH = 12
     const val MAX_PASSPHRASE_CHARS = 1024
+    const val MAX_EXPORT_FILE_NAME_CHARS = 100
+    const val MAX_PROFILE_NAME_CHARS = 64
     const val MAX_PLAINTEXT_BYTES = 256 * 1024
     const val MAX_FILE_BYTES = MAX_PLAINTEXT_BYTES + 64
+
+    fun exportFileName(name: String): String {
+        val trimmedName = name.trim()
+        val withoutExtension = if (
+            trimmedName.endsWith(FILE_EXTENSION, ignoreCase = true)
+        ) {
+            trimmedName.dropLast(FILE_EXTENSION.length)
+        } else {
+            trimmedName
+        }
+        val safeBaseName = withoutExtension
+            .filter { !it.isISOControl() && it !in "/\\:*?\"<>|" }
+            .trim()
+            .trimStart('.')
+            .take(MAX_EXPORT_FILE_NAME_CHARS)
+            .trimEnd('.', ' ')
+            .ifBlank { "KIRA VPN" }
+        return safeBaseName + FILE_EXTENSION
+    }
+
+    fun normalizeProfileName(name: String): String? {
+        val normalizedName = name.trim()
+        return normalizedName.takeIf {
+            it.isNotEmpty() &&
+                it.length <= MAX_PROFILE_NAME_CHARS &&
+                it.none { character -> character.isISOControl() }
+        }
+    }
 
     private val magic = "KIRACFG\u0001".toByteArray(StandardCharsets.US_ASCII)
     private const val SALT_BYTES = 16

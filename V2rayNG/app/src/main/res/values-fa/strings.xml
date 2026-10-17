@@ -468,6 +468,8 @@
     <string name="kira_secure_import_title">باز کردن فایل KIRA</string>
     <string name="kira_secure_import_message">عبارت عبوری را وارد کنید که فرستنده فایل جداگانه برایتان فرستاده است.</string>
     <string name="kira_secure_passphrase_label">عبارت عبور</string>
+    <string name="kira_secure_export_filename_label">نام فایل</string>
+    <string name="kira_secure_import_profile_name_label">نام پیکربندی</string>
     <string name="kira_secure_export_action">اشتراک‌گذاری فایل رمزگذاری‌شده</string>
     <string name="kira_secure_import_action">باز کردن و وارد کردن</string>
     <string name="kira_secure_export_chooser">اشتراک‌گذاری فایل رمزگذاری‌شده KIRA</string>
