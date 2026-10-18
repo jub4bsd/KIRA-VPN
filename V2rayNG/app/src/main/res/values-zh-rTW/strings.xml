@@ -401,6 +401,9 @@
     <string name="connection_test_error_status_code">錯誤碼：#%d</string>
     <string name="connection_connected">"已連線。輕觸以檢查連線。"</string>
     <string name="connection_not_connected">"未連線"</string>
+    <string name="kira_config_title">設定</string>
+    <string name="kira_connect">連線</string>
+    <string name="kira_disconnect">中斷連線</string>
     <string name="connection_running_task_left">正在執行的測試：%s</string>
 
     <string name="import_subscription_success">匯入訂閱成功</string>

@@ -407,6 +407,9 @@
     <string name="connection_test_error_status_code">Код ошибки: #%d</string>
     <string name="connection_connected">Подключено.\nНажмите, чтобы проверить соединение.</string>
     <string name="connection_not_connected">Нет соединения</string>
+    <string name="kira_config_title">Конфигурация</string>
+    <string name="kira_connect">ПОДКЛЮЧИТЬСЯ</string>
+    <string name="kira_disconnect">ОТКЛЮЧИТЬСЯ</string>
     <string name="connection_running_task_left">Выполняется проверок: %s</string>
 
     <string name="import_subscription_success">Подписка импортирована</string>

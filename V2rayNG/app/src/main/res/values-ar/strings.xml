@@ -411,6 +411,9 @@
     <string name="connection_test_error_status_code">رمز الخطأ: #%d</string>
     <string name="connection_connected">متصل. اضغط للتحقق من الاتصال.</string>
     <string name="connection_not_connected">غير متصل</string>
+    <string name="kira_config_title">التكوين</string>
+    <string name="kira_connect">اتصال</string>
+    <string name="kira_disconnect">قطع الاتصال</string>
     <string name="connection_running_task_left">الاختبارات قيد التشغيل: %s</string>
 
     <string name="import_subscription_success">تم استيراد الاشتراك بنجاح</string>

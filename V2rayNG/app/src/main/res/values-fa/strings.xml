@@ -403,6 +403,9 @@
     <string name="connection_test_error_status_code">کد خطا: #%d</string>
     <string name="connection_connected">متصل است.\nبرای بررسی اتصال ضربه بزنید.</string>
     <string name="connection_not_connected">متصل نیست</string>
+    <string name="kira_config_title">پیکربندی</string>
+    <string name="kira_connect">اتصال</string>
+    <string name="kira_disconnect">قطع اتصال</string>
     <string name="connection_running_task_left">آزمایش‌های در حال اجرا: %s</string>
 
     <string name="import_subscription_success">اشتراک با موفقیت وارد شد</string>

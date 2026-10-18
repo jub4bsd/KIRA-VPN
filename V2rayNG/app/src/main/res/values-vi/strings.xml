@@ -401,6 +401,9 @@
     <string name="connection_test_error_status_code">Mã lỗi: #%d</string>
     <string name="connection_connected">Đã kết nối.\nNhấn để kiểm tra kết nối.</string>
     <string name="connection_not_connected">Chưa kết nối</string>
+    <string name="kira_config_title">Cấu hình</string>
+    <string name="kira_connect">KẾT NỐI</string>
+    <string name="kira_disconnect">NGẮT KẾT NỐI</string>
     <string name="connection_running_task_left">Số lượt kiểm tra đang chạy: %s</string>
 
     <string name="import_subscription_success">Nhập gói đăng ký thành công!</string>
